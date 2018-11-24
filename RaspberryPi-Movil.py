@@ -1,10 +1,52 @@
 import sys
 import time
 import Adafruit_DHT
+from subprocess import call #la necesitamos para la interrupcion de teclado
+import RPi.GPIO as GPIO
+
+#Proximidad
+GPIO.setmode(GPIO.BOARD) #Queremos usar la numeracion de la placa
+ 
+#Definimos los dos pines del sensor que hemos conectado: Trigger y Echo
+Trig = 11
+Echo = 13
+ 
+#Hay que configurar ambos pines del HC-SR04
+GPIO.setup(Trig, GPIO.OUT)
+GPIO.setup(Echo, GPIO.IN)
+ 
+#Para leer la distancia del sensor al objeto, creamos una funcion
+def detectarObstaculo():
+ 
+   GPIO.output(Trig, False) #apagamos el pin Trig
+   time.sleep(2*10**-6) #esperamos dos microsegundos
+   GPIO.output(Trig, True) #encendemos el pin Trig
+   time.sleep(10*10**-6) #esperamos diez microsegundos
+   GPIO.output(Trig, False) #y lo volvemos a apagar
+ 
+  #empezaremos a contar el tiempo cuando el pin Echo se encienda
+   while GPIO.input(Echo) == 0:
+      start = time.time()
+ 
+   while GPIO.input(Echo) == 1:
+      end = time.time()
+ 
+   #La duracion del pulso del pin Echo sera la diferencia entre
+   #el tiempo de inicio y el final
+   duracion = end-start
+ 
+   #Este tiempo viene dado en segundos. Si lo pasamos
+   #a microsegundos, podemos aplicar directamente las formulas
+   #de la documentacion
+   duracion = duracion*10**6
+   medida = duracion/58 #hay que dividir por la constante que pone en la documentacion, nos dara la distancia en cm
+ 
+   print ("%.2f" %medida) #por ultimo, vamos a mostrar el resultado por pantalla
+#Proximidad fin
 
 contadorGlobal = 0
 
-while contadorGlobal < 3:
+while True:
  #------------------------------------CÓDIGO DE LOS MOTORES, MOVERSE A LA POSICIÓN ------------------------------------
  
  #---------------------------------CÓDIGO DE LOS SENSORES (HUMEDAD,TEMPERATURA Y LUZ)----------------------------------
@@ -19,7 +61,14 @@ while contadorGlobal < 3:
         #Duerme 2 segundos
 		time.sleep(2)
         contador = contador + 1
+        #Proximidad
+        detectarObstaculo()
     except Exception,e: 
 	    print str(e) # Imprime en pantalla el error e
  #----------------------------------CÓDIGO DE LOS MOTORES, REGRESAR AL ORIGEN (0,0)-------------------------------------
     contadorGlobal = contadorGlobal + 1
+
+#por ultimo hay que restablecer los pines GPIO
+print ("Limpiando...")
+GPIO.cleanup()
+print ("Acabado.")
