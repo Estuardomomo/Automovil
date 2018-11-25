@@ -3,7 +3,56 @@ import time
 import Adafruit_DHT
 from subprocess import call #la necesitamos para la interrupcion de teclado
 import RPi.GPIO as GPIO
+#-----------------------------------------CODIGO REFERENTE A LA BASE DE DATOS-----------------------------------------
+def getPosToMove():
+    collection = db["Pic"]
+    listx = []
+    listxpos = []
+    listy = []
+    listypos = []
+    result = []
+
+    for i in collection.find():
+        if(i['X'] == 0):
+            listy.append(i['Escala'])
+            listypos.append(i['Y'])
+
+        if (i['Y'] == 0):
+            listx.append(i['Escala'])
+            listxpos.append(i['X'])
+
+    posX = listxpos[listx.index(max(listx))]
+    posY = listypos[listy.index(max(listy))]
+    result.append(posX)
+    result.append(posY)
+    return result
+matriz = getPosToMove()
+print(matriz[0]) #Posicion en X
+print(matriz[1]) #Posicion en Y
 #------------------------------------CODIGO DE LOS MOTORES, MOVERSE A LA POSICION ------------------------------------
+gp.setwarnings(False)
+gp.setmode(gp.BCM)
+gp.setup(5, gp.OUT)
+gp.setup(6, gp.OUT)
+gp.setup(12, gp.OUT)
+gp.setup(16, gp.OUT)
+def right(seconds):
+    #high to front left motor
+    gp.output(5,gp.HIGH) #ADELANTE
+    gp.output(6,gp.LOW)
+    gp.output(12,gp.LOW) #ATRAS
+    gp.output(16,gp.HIGH)
+    print('right')
+    time.sleep(seconds)
+MovX = 0
+MovY = 0
+while MovX < matriz[0]
+    #Move 1 meter Foward
+    MovX = MovX + 1
+right(0.75)
+while MovY < matriz[0]
+    #Move 1 meter Foward
+    MovY = MovY + 1
 #---------------------------------CODIGO DE LOS SENSORES (HUMEDAD,TEMPERATURA Y LUZ)----------------------------------
 GPIO.setmode(GPIO.BOARD) #Queremos usar la numeracion de la placa
 #Definimos los dos pines del sensor que hemos conectado: Trigger y Echo
@@ -32,17 +81,18 @@ def detectarObstaculo():
     #de la documentacion
     duracion = duracion*10**6
     medida = duracion/58 #hay que dividir por la constante que pone en la documentacion, nos dara la distancia en cm
-    print ("%.2f" %medida) #por ultimo, vamos a mostrar el resultado por pantalla
+    return medida
 sensor = Adafruit_DHT.DHT11 #Configuracion del tipo de sensor DHT
 pin = 23                    #Configuracion del puerto GPIO al cual esta conectado (GPIO 23)
 try:                        
 	contador = 0
-    while True:     #Debemos medir datos 2 minutos, y tardamos 2 seg por medición.
+    while contador < 60:     #Debemos medir datos 2 minutos, y tardamos 2 seg por medición.
 	    humedad, temperatura = Adafruit_DHT.read_retry(sensor, pin)
         #Imprime en la consola las variables temperatura y humedad con un decimal
         print('Temperatura={0:0.1f}*  Humedad={1:0.1f}%'.format(temperatura, humedad))
         #Proximidad
-        detectarObstaculo()
+        Proximidad = detectarObstaculo()
+        print ("%.2f" %Proximidad) #por ultimo, vamos a mostrar el resultado por pantalla
         #Duerme 2 segundos
         time.sleep(2)
         contador = contador + 1
@@ -51,5 +101,14 @@ except KeyboardInterrupt:
 #por ultimo hay que restablecer los pines GPIO
 print ("Limpiando...")
 GPIO.cleanup()
-print ("Acabado.")
  #----------------------------------CODIGO DE LOS MOTORES, REGRESAR AL ORIGEN (0,0)-------------------------------------
+ while MovY > 0
+    #Move 1 meter Backwards
+    MovY = MovY - 1
+right(0.75)
+while MovX > 0
+    #Move 1 meter Backwards
+    MovX = MovX - 1
+right(0.75)
+right(0.75)
+print ("Acabado.")
