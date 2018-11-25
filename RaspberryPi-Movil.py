@@ -44,6 +44,40 @@ def right(seconds):
     gp.output(16,gp.HIGH)
     print('right')
     time.sleep(seconds)
+def forwardDerecha(seconds):
+    gp.output(5,gp.HIGH) #ADELANTEDerecha
+    gp.output(6,gp.LOW)
+    print('forwardDerecha')
+    time.sleep(seconds) 
+def forwardIzquierda(seconds):
+    gp.output(12,gp.HIGH) #ADELANTEIzquierda
+    gp.output(16,gp.LOW)
+    print('forwardIzquierda')
+    time.sleep(seconds)
+def backwards(seconds):
+    gp.output(5,gp.LOW) #ATRAS
+    gp.output(6,gp.HIGH)
+    gp.output(12,gp.LOW) #ATRAS
+    gp.output(16,gp.HIGH)
+    gp.output(18,gp.HIGH)
+    gp.output(19,gp.LOW)
+    gp.output(21,gp.HIGH)
+    gp.output(22,gp.LOW)
+    print('backwards')
+    time.sleep(seconds)
+def stop(seconds):
+    gp.output(5,gp.LOW) #ATRAS
+    gp.output(6,gp.LOW)
+    gp.output(12,gp.LOW) #ATRAS
+    gp.output(16,gp.LOW)
+    print('stop')
+    time.sleep(seconds)
+#def MovMeterFoward()
+    #for i in range(0,20):
+    #forwardDerecha(0.25)
+    #stop(0.5)
+    #forwardIzquierda(0.25)
+    #stop(0.5)
 MovX = 0
 MovY = 0
 while MovX < matriz[0]
@@ -107,7 +141,7 @@ GPIO.cleanup()
     MovY = MovY - 1
 right(0.75)
 while MovX > 0
-    #Move 1 meter Backwards
+    #Move 1 meter Foward
     MovX = MovX - 1
 right(0.75)
 right(0.75)
