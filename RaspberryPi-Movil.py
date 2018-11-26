@@ -135,7 +135,7 @@ sensor = Adafruit_DHT.DHT11 #Configuracion del tipo de sensor DHT
 pin = 23                    #Configuracion del puerto GPIO al cual esta conectado (GPIO 23)
 try:                        
 	contador = 0
-    while contador < 4:     #Debemos medir datos 2 minutos, y tardamos 2 seg por medición.
+    while contador < 4:     #Debemos medir datos 2 minutos, y tardamos 2 seg por medicion.
 	    humedad, temperatura = Adafruit_DHT.read_retry(sensor, pin)
         #Imprime en la consola las variables temperatura y humedad con un decimal
         print('Temperatura={0:0.1f}*  Humedad={1:0.1f}%'.format(temperatura, humedad))
