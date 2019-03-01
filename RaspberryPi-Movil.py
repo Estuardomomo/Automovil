@@ -5,6 +5,11 @@ from subprocess import call #la necesitamos para la interrupcion de teclado
 import RPi.GPIO as GPIO
 from pymongo import MongoClient
 import datetime
+GPIO.setmode(GPIO.BOARD) #Queremos usar la numeracion de la placa
+Cinco = 29
+Seis = 31
+Doce = 32
+Dieciseis =36
 #-----------------------------------------CODIGO REFERENTE A LA BASE DE DATOS-----------------------------------------
 client = MongoClient('mongodb://admin:1admin@ds263500.mlab.com:63500/arquitwo')
 db = client['arquitwo']
@@ -45,65 +50,66 @@ matriz = getPosToMove()
 print(matriz[0]) #Posicion en X
 print(matriz[1]) #Posicion en Y
 #------------------------------------CODIGO DE LOS MOTORES, MOVERSE A LA POSICION ------------------------------------
-gp.setwarnings(False)
-gp.setmode(gp.BCM)
-gp.setup(5, gp.OUT)
-gp.setup(6, gp.OUT)
-gp.setup(12, gp.OUT)
-gp.setup(16, gp.OUT)
+GPIO.setwarnings(False)
+
+GPIO.setup(Cinco, GPIO.OUT)
+GPIO.setup(Seis, GPIO.OUT)
+GPIO.setup(Doce, GPIO.OUT)
+GPIO.setup(Dieciseis, GPIO.OUT)
 def right(seconds):
     #high to front left motor
-    gp.output(5,gp.HIGH) #ADELANTE
-    gp.output(6,gp.LOW)
-    gp.output(12,gp.LOW) #ATRAS
-    gp.output(16,gp.HIGH)
+    GPIO.output(Cinco,GPIO.HIGH) #ADELANTE
+    GPIO.output(Seis,GPIO.LOW)
+    GPIO.output(Doce,GPIO.LOW) #ATRAS
+    GPIO.output(Dieciseis,GPIO.HIGH)
     print('right')
     time.sleep(seconds)
-def forwardDerecha(seconds):
-    gp.output(5,gp.HIGH) #ADELANTEDerecha
-    gp.output(6,gp.LOW)
-    print('forwardDerecha')
-    time.sleep(seconds) 
-def forwardIzquierda(seconds):
-    gp.output(12,gp.HIGH) #ADELANTEIzquierda
-    gp.output(16,gp.LOW)
-    print('forwardIzquierda')
+def left(seconds):
+    #high to front right motor
+    GPIO.output(Cinco,GPIO.LOW) #ATRAS
+    GPIO.output(Seis,GPIO.HIGH)
+    GPIO.output(Doce,GPIO.HIGH) #ADELANTE
+    GPIO.output(Dieciseis,GPIO.LOW)
+    
+    print('left')
+    time.sleep(seconds)
+def forward(seconds):
+    GPIO.output(Cinco,GPIO.HIGH) #ADELANTEDerecha
+    GPIO.output(Seis,GPIO.LOW)
+    GPIO.output(Doce,GPIO.HIGH) #ADELANTEIzquierda
+    GPIO.output(Dieciseis,GPIO.LOW)
+    print('forward')
     time.sleep(seconds)
 def backwards(seconds):
-    gp.output(5,gp.LOW) #ATRAS
-    gp.output(6,gp.HIGH)
-    gp.output(12,gp.LOW) #ATRAS
-    gp.output(16,gp.HIGH)
-    gp.output(18,gp.HIGH)
-    gp.output(19,gp.LOW)
-    gp.output(21,gp.HIGH)
-    gp.output(22,gp.LOW)
-    print('backwards')
+    GPIO.output(Cinco,GPIO.LOW) #ATRAS
+    GPIO.output(Seis,GPIO.HIGH)
+    GPIO.output(Doce,GPIO.LOW) #ATRAS
+    GPIO.output(Dieciseis,GPIO.HIGH)
+    print('atras')
     time.sleep(seconds)
 def stop(seconds):
-    gp.output(5,gp.LOW) #ATRAS
-    gp.output(6,gp.LOW)
-    gp.output(12,gp.LOW) #ATRAS
-    gp.output(16,gp.LOW)
+    GPIO.output(Cinco,GPIO.LOW) #ATRAS
+    GPIO.output(Seis,GPIO.LOW)
+    GPIO.output(Doce,GPIO.LOW) #ATRAS
+    GPIO.output(Dieciseis,GPIO.LOW)
     print('stop')
     time.sleep(seconds)
-#def MovMeterFoward()
-    #for i in range(0,20):
-    #forwardDerecha(0.25)
-    #stop(0.5)
-    #forwardIzquierda(0.25)
-    #stop(0.5)
-MovX = 0
-MovY = 0
-while MovX < matriz[0]
-    #Move 1 meter Foward
-    MovX = MovX + 1
-right(0.75)
-while MovY < matriz[0]
-    #Move 1 meter Foward
-    MovY = MovY + 1
+def MovMeterFoward():
+    for i in range(0,1):
+        forward(2.5)
+        stop(1)
+MovX = 5
+MovY = 5
+while (MovX > matriz[1]):
+    MovMeterFoward()
+    MovX = MovX - 1
+left(1.6)
+stop(1)
+while (MovY > matriz[0]):
+    MovMeterFoward()
+    MovY = MovY - 1
 #---------------------------------CODIGO DE LOS SENSORES (HUMEDAD,TEMPERATURA Y PROXIMIDAD)----------------------------------
-GPIO.setmode(GPIO.BOARD) #Queremos usar la numeracion de la placa
+
 #Definimos los dos pines del sensor que hemos conectado: Trigger y Echo
 Trig = 11
 Echo = 13
@@ -132,35 +138,38 @@ def detectarObstaculo():
     medida = duracion/58 #hay que dividir por la constante que pone en la documentacion, nos dara la distancia en cm
     return medida
 sensor = Adafruit_DHT.DHT11 #Configuracion del tipo de sensor DHT
-pin = 23                    #Configuracion del puerto GPIO al cual esta conectado (GPIO 23)
+pin = 23                    #Configuracion del puerto GPIOIO al cual esta conectado (GPIOIO 23)
 try:                        
-	contador = 0
-    while contador < 4:     #Debemos medir datos 2 minutos, y tardamos 2 seg por medicion.
-	    humedad, temperatura = Adafruit_DHT.read_retry(sensor, pin)
+    contador = 0
+    while (contador < 60):#Debemos medir datos 2 minutos, y tardamos 2 seg por medicion
+        humedad, temperatura = Adafruit_DHT.read_retry(sensor, pin)
         #Imprime en la consola las variables temperatura y humedad con un decimal
         print('Temperatura={0:0.1f}*  Humedad={1:0.1f}%'.format(temperatura, humedad))
         #Proximidad
         Proximidad = detectarObstaculo()
         print ("%.2f" %Proximidad) #por ultimo, vamos a mostrar el resultado por pantalla
         #Duerme 2 segundos
-        time.sleep(10)
+        time.sleep(2)
         contador = contador + 1
         InsertarXplorer(2,1, matriz[0], matriz[1], temperatura)
         InsertarXplorer(2,2, matriz[0], matriz[1], humedad)
         InsertarXplorer(2,4, matriz[0], matriz[1], Proximidad)
 except KeyboardInterrupt: 
 	print("Ha ocurrido un error inesperado al utilizar los sensores") # Imprime en pantalla el error e
+
+ #----------------------------------CODIGO DE LOS MOTORES, REGRESAR AL ORIGEN (0,0)-------------------------------------
+while (MovY <  5):
+    backwards(2.5)
+    MovY = MovY + 1
+left(1.6)
+stop(1)
+while (MovX < 5):
+    MovMeterFoward()
+    MovX = MovX + 1
+left(1.6)
+left(1.6)
+stop(1)
+print ("Acabado.")
 #por ultimo hay que restablecer los pines GPIO
 print ("Limpiando...")
 GPIO.cleanup()
- #----------------------------------CODIGO DE LOS MOTORES, REGRESAR AL ORIGEN (0,0)-------------------------------------
- while MovY > 0
-    #Move 1 meter Backwards
-    MovY = MovY - 1
-right(0.75)
-while MovX > 0
-    #Move 1 meter Foward
-    MovX = MovX - 1
-right(0.75)
-right(0.75)
-print ("Acabado.")
